@@ -1,0 +1,27 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load data
+df = pd.read_csv('your_data.csv') # Replace 'your_data.csv' with your file name
+
+# Create figure and primary y-axis using column names
+fig, ax1 = plt.subplots()
+
+ax1.set_xlabel('Date')
+ax1.set_ylabel('Abundance', color='cornflowerblue')
+# Use df['column_name'] to access DataFrame columns
+ax1.plot(df['Date'], df['Abundance'], color='cornflowerblue', marker='o', label='Abundance')
+ax1.tick_params(axis='y', labelcolor='cornflowerblue')
+
+# Create second y-axis sharing the same x-axis
+ax2 = ax1.twinx()
+
+ax2.set_ylabel('Mean SST (°C)', color='indianred')
+# Use df['column_name'] to access DataFrame columns
+ax2.plot(df['Date'], df['Mean_SST'], color='indianred', marker='s', linestyle='--', label='Mean_SST')
+ax2.tick_params(axis='y', labelcolor='indianred')
+ax1.grid(True, color='silver', linestyle=':', linewidth=1)
+
+plt.savefig('SSTxAbundance.png', dpi=300, bbox_inches='tight')
+plt.show()
