@@ -1,0 +1,47 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset as .csv
+df = pd.read_csv('your_data.csv')  # <--- Replace 'your_data.csv' with your filename
+
+# Assuming your CSV has columns: 'Sample', 'Abundance', 'Lower_CI', 'Upper_CI'
+# Extract values
+abundance = df['Abundance'].values
+lower_CI = df['Lower'].values
+upper_CI = df['Upper'].values
+sample_labels = df['Year'].values  # optional: for x-axis labels
+
+# Calculate 95% confidence interval error bars 
+lower_errors = abundance - lower_CI  # Distance from point to lower CI
+upper_errors = upper_CI - abundance  # Distance from point to upper CI
+
+# Make sure all values are positive by taking absolute values
+lower_errors = np.abs(lower_errors)
+upper_errors = np.abs(upper_errors)
+
+asymmetric_error = [lower_errors, upper_errors]
+
+# X positions
+x = np.arange(len(abundance))
+
+# Plot
+plt.figure(figsize=(12,7))
+plt.errorbar(x, abundance, yerr=asymmetric_error, fmt='o', 
+             ecolor='skyblue', capsize=4, markersize=8, markerfacecolor='cornflowerblue', linestyle='None', markeredgecolor='none')
+
+plt.xlabel('Year', fontsize=14)
+plt.ylabel('Abundance', fontsize=14)
+plt.grid(True, linestyle='--', alpha=0.6)
+if len(sample_labels) <= 50:  # limit so it doesn't get messy
+    plt.xticks(x, sample_labels, rotation=90)
+
+plt.tight_layout()
+plt.savefig('DolphinAbundance.png', dpi=300, bbox_inches='tight')
+plt.show()
+
+# Test for a trend using the Mann-Kendall test
+import pymannkendall as mk
+
+trend1 = mk.original_test(df['Abundance'])
+print("Dolphin abundance is",trend1[0], ", P-value =", ("%.8f" % trend1[2]))
