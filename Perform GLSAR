@@ -1,0 +1,45 @@
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.regression.linear_model import GLSAR
+import matplotlib.pyplot as plt
+
+# Load daily SST data and abundance data
+sst_daily = pd.read_csv('your_data.csv')  # Replace 'your_data.csv' with your filename
+abundance = pd.read_csv('your_data.csv')  # Replace 'your_data.csv' with your filename
+
+# Print column names to verify
+print("SST columns:", sst_daily.columns.tolist())
+print("Abundance columns:", abundance.columns.tolist())
+
+# Change the text when performing actions to match your actual column name
+# For example: date_column = 'Dates' # 'Dates' can be changed to your column name
+
+# Convert date column to datetime format (adjust column name as needed)
+date_column = 'Dates'
+sst_daily[date_column] = pd.to_datetime(sst_daily[date_column])
+
+# Aggregate SST by year
+sst_daily['Dates'] = sst_daily[date_column].dt.year
+sst_annual = sst_daily.groupby('Dates')['SST_Celsius'].mean().reset_index()
+sst_annual.rename(columns={'SST_Celsius': 'mean_sst'}, inplace=True)
+
+# Merge SST and abundance (adjust 'year' if needed)
+year_column = 'Dates'
+data = pd.merge(abundance, sst_annual, on=year_column)
+
+# Regression Analysis
+X = sm.add_constant(data['mean_sst'])
+y = data['Abundance']
+
+# GLSAR (GLS with AR(1) structure)
+model = GLSAR(y, X, rho=1)
+results = model.iterative_fit(maxiter=10)
+
+print(results.summary())
+
+# Plot residuals
+plt.plot(results.resid)
+plt.title('Residuals from GLSAR')
+plt.xlabel('Time')
+plt.ylabel('Residual')
+plt.show()
